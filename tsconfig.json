@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "target": "ES6",
+    "noImplicitAny": true,
+    "removeComments": true,
+    "sourceMap": true,
+    "allowJs": true,
+    "skipLibCheck": true,
+    "allowSyntheticDefaultImports": true,
+    "moduleResolution": "Node"
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules/**/*", "src/data/**/*"]
+}
