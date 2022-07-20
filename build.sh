@@ -13,7 +13,6 @@ fi
 # create new public folder & add README.md
 mkdir public
 touch ./public/README.md
-date +"%T" >> ./public/README.md
 echo "My name is Ram4GB" >> ./public/README.md
 cat ./public/README.md
 

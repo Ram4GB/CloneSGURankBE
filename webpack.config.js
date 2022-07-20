@@ -37,9 +37,9 @@ module.exports = {
   },
   devtool: process.env.NODE_ENV === 'development' ? "source-map" : "eval",
   stats: 'errors-warnings',
-  optimization: {
-    splitChunks: {
-      chunks: 'all',
-    },
-  },
+  // optimization: {
+  //   splitChunks: {
+  //     chunks: 'all',
+  //   },
+  // },
 }

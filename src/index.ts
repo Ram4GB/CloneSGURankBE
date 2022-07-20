@@ -2,12 +2,11 @@ import 'dotenv/config';
 import express from 'express';
 import getRank from './utils/getRank';
 import FirebaseClass from './firebase/index';
-import WorkerSchedule from './cron/index';
+// import WorkerSchedule from './cron/index';
 import cors from 'cors';
 import { crawlApprovedRequest } from './cron/schedule';
 import FireBaseClass from './firebase/index';
-
-
+import FTPClient from './ftp';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -18,7 +17,7 @@ app.use(express.static('public'));
 app.use(cors());
 
 // vercel does not work with cron
-WorkerSchedule.start();
+// WorkerSchedule.start();
 
 app.get('/api/rank/', async (req, res) => {
   try {
@@ -88,7 +87,13 @@ app.get('/api/rank/', async (req, res) => {
 
 app.get('/api/all-points', async (req, res) => {
   try {
-    const result = await FirebaseClass.getAllPoints().then((data) => data);
+    // Way 1:
+    // const result = await FirebaseClass.getAllPoints().then((data) => data);
+
+    // Way 2:
+    // reduce Firebase reading
+    const result = await FTPClient.getAllPoints();
+
     res.status(200).send({
       success: true,
       data: result.map((item) => {
@@ -165,13 +170,22 @@ app.post('/api/point', async (req, res) => {
         prefixId: existence.data.prefixId || prefixId || '',
       });
 
+      const syncPoints = await FTPClient.getAllPoints();
+      syncPoints.forEach((item) => {
+        if(item.name === existence.data.name) {
+          item.foundCount++;
+        }
+      });
+
+      await FTPClient.syncPointsFromFirebase(JSON.stringify(syncPoints));
+
       return res.status(500).send({
         success: false,
         error: 'Đã có dữ liệu này rồi',
       });
     }
 
-    await FirebaseClass.addItemToPointsCollection(fileName, {
+    const item = {
       createdTime: new Date().toISOString(),
       k: k as string,
       name: fileName,
@@ -182,7 +196,13 @@ app.post('/api/point', async (req, res) => {
       isAvailable: false,
       foundCount: 0,
       prefixId: prefixId || ''
-    });
+    };
+    await FirebaseClass.addItemToPointsCollection(fileName, item);
+
+    const syncPoints = await FTPClient.getAllPoints();
+    syncPoints.push(item);
+
+    await FTPClient.syncPointsFromFirebase(JSON.stringify(syncPoints));
 
     return res.status(201).send({
       success: false

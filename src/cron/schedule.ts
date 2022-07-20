@@ -1,4 +1,5 @@
 import FireBaseClass from '../firebase';
+import FTPClient from '../ftp';
 import { IPoint } from '../interface/point';
 import getAllStudents from '../utils/getAllStudents';
 
@@ -32,6 +33,10 @@ export const crawlApprovedRequest = async (curTask?: IPoint) => {
       isAvailable: true,
       isApproved: true,
     });
+
+    const points = await FireBaseClass.getAllPoints();
+
+    await FTPClient.syncPointsFromFirebase(JSON.stringify(points));
 
     console.log(task.name + ' is available now');
 
